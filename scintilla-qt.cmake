@@ -52,13 +52,6 @@ target_include_directories(scintilla-qt-edit-base PUBLIC include/)
 target_link_libraries(scintilla-qt-edit-base Qt5::Widgets)
 set_property(TARGET scintilla-qt-edit-base PROPERTY VERSION "${CMAKE_PROJECT_VERSION}")
 set_property(TARGET scintilla-qt-edit-base PROPERTY SOVERSION 5 )
-# TODO add `NDEBUG` only on relase builds
-# inside the original PRI file this was done only on release. However - I found an assert
-# that crashes NotepadNext. I am not touching this right now
-# see also:
-#   https://github.com/dail8859/NotepadNext/issues/89
-#   https://github.com/ScintillaOrg/lexilla/issues/35
-target_compile_definitions(scintilla-qt-edit-base PRIVATE -DNDEBUG=1)
 
 add_library(scintilla-qt-edit
     qt/ScintillaEdit/ScintillaEdit.cpp
