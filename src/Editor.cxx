@@ -1861,7 +1861,7 @@ long Editor::TextWidth(uptr_t style, const char *text) {
 // Empty method is overridden on GTK+ to show / hide scrollbars
 void Editor::ReconfigureScrollBars() {}
 
-void Editor::SetScrollBars() {
+void Editor::ChangeScrollBars() {
 	RefreshStyleData();
 
 	const Sci::Line nMax = MaxScrollPos();
@@ -1883,6 +1883,11 @@ void Editor::SetScrollBars() {
 			Redraw();
 	}
 	//Platform::DebugPrintf("end max = %d page = %d\n", nMax, nPage);
+}
+
+void Editor::SetScrollBars() {
+	// Overridden on GTK to defer to idle
+	ChangeScrollBars();
 }
 
 void Editor::ChangeSize() {
@@ -4079,17 +4084,9 @@ void Editor::Indent(bool forwards) {
 	ContainerNeedsUpdate(Update::Selection);
 }
 
-class CaseFolderASCII : public CaseFolderTable {
-public:
-	CaseFolderASCII() noexcept {
-		StandardASCII();
-	}
-};
-
-
 std::unique_ptr<CaseFolder> Editor::CaseFolderForEncoding() {
 	// Simple default that only maps ASCII upper case to lower case.
-	return std::make_unique<CaseFolderASCII>();
+	return std::make_unique<CaseFolderTable>();
 }
 
 /**
