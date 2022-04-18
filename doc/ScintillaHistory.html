@@ -569,9 +569,63 @@
       </tr><tr>
 	<td>Arkadiusz Michalski</td>
 	<td>Christian Schmitz</td>
+	<td>Michael Berlenz</td>
     </tr>
     </table>
     <h2>Releases</h2>
+    <h3>
+       <a href="https://www.scintilla.org/scintilla522.zip">Release 5.2.2</a>
+    </h3>
+    <ul>
+	<li>
+	Released 31 March 2022.
+	</li>
+	<li>
+	Add SCI_GETSTYLEINDEXAT API to return styles over 127 as positive integers.
+	<a href="https://sourceforge.net/p/scintilla/feature-requests/1431/">Feature #1431</a>.
+	</li>
+	<li>
+	On GTK, scroll horizontally with shift + scroll wheel.
+	</li>
+	<li>
+	Fix crash with unexpected right-to-left text on GTK.
+	<a href="https://sourceforge.net/p/scintilla/bugs/2309/">Bug #2309</a>.
+	</li>
+	<li>
+	Fix position of end-of-line annotation when fold display text is visible.
+	<a href="https://sourceforge.net/p/scintilla/bugs/2320/">Bug #2320</a>.
+	</li>
+	<li>
+	On Direct2D, support per-monitor text rendering parameters.
+	<a href="https://sourceforge.net/p/scintilla/feature-requests/1432/">Feature #1432</a>.
+	</li>
+    </ul>
+    <h3>
+       <a href="https://www.scintilla.org/scintilla521.zip">Release 5.2.1</a>
+    </h3>
+    <ul>
+	<li>
+	Released 24 February 2022.
+	</li>
+	<li>
+	Enable multi-threaded layout on GTK.
+	</li>
+	<li>
+	Fix pixmap leak on GTK.
+	<a href="https://sourceforge.net/p/scintilla/bugs/2317/">Bug #2317</a>.
+	</li>
+	<li>
+	Fix re-entrant painting on GTK to maintain update region.
+	</li>
+	<li>
+	Fix key map for GTK on macOS.
+	<a href="https://sourceforge.net/p/scintilla/bugs/2315/">Bug #2315</a>.
+	</li>
+	<li>
+	Fix building for Haiku.
+	<a href="https://sourceforge.net/p/scintilla/bugs/2315/">Bug #2315</a>.
+	</li>
+    </ul>
     <h3>
        <a href="https://www.scintilla.org/scintilla520.zip">Release 5.2.0</a>
     </h3>
@@ -597,6 +651,11 @@
 	<li>
 	Allow choice of object file directory with makefile by setting DIR_O.
 	<a href="https://sourceforge.net/p/scintilla/bugs/2306/">Bug #2306</a>.
+	</li>
+	<li>
+	On GTK, use fractional positioning to help Chinese characters in monospaced fonts
+	line up better with roman characters.
+	<a href="https://sourceforge.net/p/scintilla/bugs/2310/">Bug #2310</a>.
 	</li>
 	<li>
 	On macOS allow Scintilla to run if built without cursor images.
