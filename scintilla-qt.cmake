@@ -11,7 +11,7 @@ find_package(Qt5 COMPONENTS Widgets REQUIRED)
 # libraries dependent on this (lexilla for example) does not have to
 # choose an implementation, instead use the shared library.
 # Or am I reading this bad, and scintilla-qt-edit should depend on scintilla-qt-edit-base?
-add_library(scintilla-qt-edit-base
+set(SCINTILLA_QT_EDIT_BASE_SOURCES
     qt/ScintillaEditBase/PlatQt.cpp
     qt/ScintillaEditBase/ScintillaQt.cpp
     qt/ScintillaEditBase/ScintillaEditBase.cpp
@@ -47,16 +47,27 @@ add_library(scintilla-qt-edit-base
     src/CallTip.cxx
     src/AutoComplete.cxx
 )
+
+if (BUILD_STATIC)
+    set(CMAKE_STATIC_LIBRARY_SUFFIX "_static${CMAKE_STATIC_LIBRARY_SUFFIX}")
+    add_library(scintilla-qt-edit-base STATIC ${SCINTILLA_QT_EDIT_BASE_SOURCES})
+else()
+    add_library(scintilla-qt-edit-base SHARED ${SCINTILLA_QT_EDIT_BASE_SOURCES})
+endif()
 target_include_directories(scintilla-qt-edit-base PRIVATE include/ src/ qt/)
 target_include_directories(scintilla-qt-edit-base PUBLIC include/)
 target_link_libraries(scintilla-qt-edit-base Qt5::Widgets)
+target_link_libraries(scintilla-qt-edit-base pthread)
 set_property(TARGET scintilla-qt-edit-base PROPERTY VERSION "${CMAKE_PROJECT_VERSION}")
 set_property(TARGET scintilla-qt-edit-base PROPERTY SOVERSION 5 )
 
-add_library(scintilla-qt-edit
-    qt/ScintillaEdit/ScintillaEdit.cpp
-    qt/ScintillaEdit/ScintillaDocument.cpp
-)
+
+if (BUILD_STATIC)
+    set(CMAKE_STATIC_LIBRARY_SUFFIX "_static${CMAKE_STATIC_LIBRARY_SUFFIX}")
+    add_library(scintilla-qt-edit STATIC qt/ScintillaEdit/ScintillaEdit.cpp qt/ScintillaEdit/ScintillaDocument.cpp)
+else()
+    add_library(scintilla-qt-edit SHARED qt/ScintillaEdit/ScintillaEdit.cpp qt/ScintillaEdit/ScintillaDocument.cpp)
+endif()
 target_include_directories(scintilla-qt-edit PRIVATE include/ src/ qt/ qt/ScintillaEditBase)
 target_compile_definitions(scintilla-qt-edit PRIVATE
     -DSCINTILLA_QT=1
