@@ -99,6 +99,12 @@ class LineAnnotation : public PerLine {
 public:
 	LineAnnotation() {
 	}
+	// Deleted so LineAnnotation objects can not be copied.
+	LineAnnotation(const LineAnnotation &) = delete;
+	LineAnnotation(LineAnnotation &&) = delete;
+	void operator=(const LineAnnotation &) = delete;
+	void operator=(LineAnnotation &&) = delete;
+	~LineAnnotation() override;
 
 	[[nodiscard]] bool Empty() const noexcept;
 	void Init() override;
