@@ -11,17 +11,21 @@
 #include "ScintillaDocument.h"
 
 #ifndef EXPORT_IMPORT_API
-#ifdef WIN32
-#ifdef MAKING_LIBRARY
-#define EXPORT_IMPORT_API __declspec(dllexport)
-#else
-// Defining dllimport upsets moc
-#define EXPORT_IMPORT_API __declspec(dllimport)
-//#define EXPORT_IMPORT_API
-#endif
-#else
-#define EXPORT_IMPORT_API
-#endif
+    #ifdef WIN32
+        #ifdef MAKING_LIBRARY
+            #define EXPORT_IMPORT_API __declspec(dllexport)
+        #else
+            // Defining dllimport upsets moc
+            #define EXPORT_IMPORT_API __declspec(dllimport)
+        #endif
+        #if defined(SCINTILLA_STATIC)
+            // Compiling as static library - ignoring all DLL exports/imports
+            #undef EXPORT_IMPORT_API
+            #define EXPORT_IMPORT_API
+        #endif
+    #else
+        #define EXPORT_IMPORT_API
+    #endif
 #endif
 
 class EXPORT_IMPORT_API ScintillaEdit : public ScintillaEditBase {
