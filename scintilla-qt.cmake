@@ -2,15 +2,13 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-# TODO add support for Qt6
-find_package(Qt5 COMPONENTS Widgets REQUIRED)
+find_package(QT NAMES Qt6 Qt5 COMPONENTS Core REQUIRED)
+find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core Gui Widgets REQUIRED)
 
-# TODO make a common library for scintilla-qt
-# Note how scintilla-qt-edit-base and scintilla-qt-edit share a lot of
-# code. This can be shared in another 3d parent library. This means that
-# libraries dependent on this (lexilla for example) does not have to
-# choose an implementation, instead use the shared library.
-# Or am I reading this bad, and scintilla-qt-edit should depend on scintilla-qt-edit-base?
+if (Qt6_FOUND)
+    find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core5Compat REQUIRED)
+endif()
+
 set(SCINTILLA_QT_EDIT_BASE_SOURCES
     qt/ScintillaEditBase/PlatQt.cpp
     qt/ScintillaEditBase/ScintillaQt.cpp
@@ -51,20 +49,26 @@ set(SCINTILLA_QT_EDIT_BASE_SOURCES
 if (BUILD_STATIC)
     set(CMAKE_STATIC_LIBRARY_SUFFIX "_static${CMAKE_STATIC_LIBRARY_SUFFIX}")
     add_library(scintilla-qt-edit-base STATIC ${SCINTILLA_QT_EDIT_BASE_SOURCES})
+    target_compile_definitions(scintilla-qt-edit-base PUBLIC SCINTILLA_STATIC)
 else()
     add_library(scintilla-qt-edit-base SHARED ${SCINTILLA_QT_EDIT_BASE_SOURCES})
 endif()
 target_include_directories(scintilla-qt-edit-base PRIVATE include/ src/ qt/)
 target_include_directories(scintilla-qt-edit-base PUBLIC include/)
-target_link_libraries(scintilla-qt-edit-base Qt5::Widgets)
+target_link_libraries(scintilla-qt-edit-base PRIVATE Qt::Widgets)
+if (UNIX)
 target_link_libraries(scintilla-qt-edit-base pthread)
+endif()
+if (Qt6_FOUND)
+    target_link_libraries(scintilla-qt-edit-base PRIVATE Qt6::Core5Compat)
+endif()
 set_property(TARGET scintilla-qt-edit-base PROPERTY VERSION "${CMAKE_PROJECT_VERSION}")
 set_property(TARGET scintilla-qt-edit-base PROPERTY SOVERSION 5 )
-
 
 if (BUILD_STATIC)
     set(CMAKE_STATIC_LIBRARY_SUFFIX "_static${CMAKE_STATIC_LIBRARY_SUFFIX}")
     add_library(scintilla-qt-edit STATIC qt/ScintillaEdit/ScintillaEdit.cpp qt/ScintillaEdit/ScintillaDocument.cpp)
+    target_compile_definitions(scintilla-qt-edit PUBLIC SCINTILLA_STATIC)
 else()
     add_library(scintilla-qt-edit SHARED qt/ScintillaEdit/ScintillaEdit.cpp qt/ScintillaEdit/ScintillaDocument.cpp)
 endif()
@@ -76,19 +80,9 @@ target_compile_definitions(scintilla-qt-edit PRIVATE
     -D_CRT_SECURE_NO_DEPRECATE=1
 )
 target_include_directories(scintilla-qt-edit PUBLIC include/ src/ qt/ScintillaEdit qt/ScintillaEditBase )
-target_link_libraries(scintilla-qt-edit Qt5::Widgets scintilla-qt-edit-base)
+target_link_libraries(scintilla-qt-edit PRIVATE Qt::Widgets scintilla-qt-edit-base)
+if (Qt6_FOUND)
+    target_link_libraries(scintilla-qt-edit PRIVATE Qt6::Core5Compat)
+endif()
 set_property(TARGET scintilla-qt-edit PROPERTY VERSION "${CMAKE_PROJECT_VERSION}")
 set_property(TARGET scintilla-qt-edit PROPERTY SOVERSION 5 )
-
-
-# TODO - this part is too ugly, and should not be here
-if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
-    target_compile_options(scintilla-qt-edit PRIVATE -Wall -Wextra -pedantic --warn-no-unused-variable -Wformat -Wformat-security)
-elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-    target_compile_options(scintilla-qt-edit PRIVATE -Wall -Wextra -pedantic --warn-no-unused-variable -Wformat -Wformat-security)
-elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
-    MESSAGE("TODO: Intel compiler uses generic builds - add better compile flags")
-elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-    target_compile_options(scintilla-qt-edit PRIVATE /utf-8 /guard:cf)
-    target_link_options(scintilla-qt-edit PRIVATE /guard:cf)
-endif()
