@@ -83,6 +83,10 @@ constParameterPointer:scintilla/gtk/ScintillaGTKAccessible.cxx
 constVariableReference:scintilla/gtk/ScintillaGTKAccessible.cxx
 constVariablePointer:scintilla/gtk/ScintillaGTKAccessible.cxx
 
+// Have no way of testing ScintillaEdit so don't fix even simple warnings
+cstyleCast:scintilla/qt/ScintillaEdit/ScintillaEdit.cpp
+shadowFunction:scintilla/qt/ScintillaEdit/ScintillaEdit.cpp
+
 // moc_ files show #error as they are not built with standard context
 preprocessorErrorDirective:scintilla/qt/**.cpp
 
