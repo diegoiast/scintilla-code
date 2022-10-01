@@ -75,6 +75,7 @@ public:
 	sptr_t currentPos() const;
 	sptr_t anchor() const;
 	sptr_t styleAt(sptr_t pos) const;
+	sptr_t styleIndexAt(sptr_t pos) const;
 	void redo();
 	void setUndoCollection(bool collectUndo);
 	void selectAll();
@@ -302,6 +303,8 @@ public:
 	sptr_t printMagnification() const;
 	void setPrintColourMode(sptr_t mode);
 	sptr_t printColourMode() const;
+	void setChangeHistory(sptr_t changeHistory);
+	sptr_t changeHistory() const;
 	sptr_t firstVisibleLine() const;
 	QByteArray getLine(sptr_t line);
 	sptr_t lineCount() const;
@@ -314,6 +317,7 @@ public:
 	void setSel(sptr_t anchor, sptr_t caret);
 	QByteArray getSelText();
 	void hideSelection(bool hide);
+	bool selectionHidden() const;
 	sptr_t pointXFromPosition(sptr_t pos);
 	sptr_t pointYFromPosition(sptr_t pos);
 	sptr_t lineFromPosition(sptr_t pos);

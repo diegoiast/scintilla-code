@@ -132,6 +132,10 @@ sptr_t ScintillaEdit::styleAt(sptr_t pos) const {
     return send(SCI_GETSTYLEAT, pos, 0);
 }
 
+sptr_t ScintillaEdit::styleIndexAt(sptr_t pos) const {
+    return send(SCI_GETSTYLEINDEXAT, pos, 0);
+}
+
 void ScintillaEdit::redo() {
     send(SCI_REDO, 0, 0);
 }
@@ -1040,6 +1044,14 @@ sptr_t ScintillaEdit::printColourMode() const {
     return send(SCI_GETPRINTCOLOURMODE, 0, 0);
 }
 
+void ScintillaEdit::setChangeHistory(sptr_t changeHistory) {
+    send(SCI_SETCHANGEHISTORY, changeHistory, 0);
+}
+
+sptr_t ScintillaEdit::changeHistory() const {
+    return send(SCI_GETCHANGEHISTORY, 0, 0);
+}
+
 sptr_t ScintillaEdit::firstVisibleLine() const {
     return send(SCI_GETFIRSTVISIBLELINE, 0, 0);
 }
@@ -1086,6 +1098,10 @@ QByteArray ScintillaEdit::getSelText() {
 
 void ScintillaEdit::hideSelection(bool hide) {
     send(SCI_HIDESELECTION, hide, 0);
+}
+
+bool ScintillaEdit::selectionHidden() const {
+    return send(SCI_GETSELECTIONHIDDEN, 0, 0);
 }
 
 sptr_t ScintillaEdit::pointXFromPosition(sptr_t pos) {
