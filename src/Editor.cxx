@@ -5783,6 +5783,27 @@ void Editor::AddStyledText(const char *buffer, Sci::Position appendLength) {
 	SetEmptySelection(sel.MainCaret() + lengthInserted);
 }
 
+Sci::Position Editor::GetStyledText(char *buffer, Sci::Position cpMin, Sci::Position cpMax) const noexcept {
+	Sci::Position iPlace = 0;
+	for (Sci::Position iChar = cpMin; iChar < cpMax; iChar++) {
+		buffer[iPlace++] = pdoc->CharAt(iChar);
+		buffer[iPlace++] = pdoc->StyleAtNoExcept(iChar);
+	}
+	buffer[iPlace] = '\0';
+	buffer[iPlace + 1] = '\0';
+	return iPlace;
+}
+
+Sci::Position Editor::GetTextRange(char *buffer, Sci::Position cpMin, Sci::Position cpMax) const {
+	const Sci::Position cpEnd = (cpMax == -1) ? pdoc->Length() : cpMax;
+	PLATFORM_ASSERT(cpEnd <= pdoc->Length());
+	const Sci::Position len = cpEnd - cpMin; 	// No -1 as cpMin and cpMax are referring to inter character positions
+	pdoc->GetCharRange(buffer, cpMin, len);
+	// Spec says copied text is terminated with a NUL
+	buffer[len] = '\0';
+	return len; 	// Not including NUL
+}
+
 bool Editor::ValidMargin(uptr_t wParam) const noexcept {
 	return wParam < vs.ms.size();
 }
@@ -5832,6 +5853,19 @@ void Editor::StyleSetMessage(Message iMessage, uptr_t wParam, sptr_t lParam) {
 	case Message::StyleSetVisible:
 		vs.styles[wParam].visible = lParam != 0;
 		break;
+	case Message::StyleSetInvisibleRepresentation: {
+		const char *utf8 = ConstCharPtrFromSPtr(lParam);
+		char *rep = vs.styles[wParam].invisibleRepresentation;
+		const int classified = UTF8Classify(utf8);
+		if (!(classified & UTF8MaskInvalid)) {
+			// valid UTF-8
+			int len = classified & UTF8MaskWidth;
+			while (len--)
+				*rep++ = *utf8++;
+		}
+		*rep = 0;
+		break;
+	}
 	case Message::StyleSetChangeable:
 		vs.styles[wParam].changeable = lParam != 0;
 		break;
@@ -5878,6 +5912,8 @@ sptr_t Editor::StyleGetMessage(Message iMessage, uptr_t wParam, sptr_t lParam) {
 		return vs.styles[wParam].visible ? 1 : 0;
 	case Message::StyleGetChangeable:
 		return vs.styles[wParam].changeable ? 1 : 0;
+	case Message::StyleGetInvisibleRepresentation:
+		return StringResult(lParam, vs.styles[wParam].invisibleRepresentation);
 	case Message::StyleGetHotSpot:
 		return vs.styles[wParam].hotspot ? 1 : 0;
 	case Message::StyleGetCheckMonospaced:
@@ -6296,36 +6332,17 @@ sptr_t Editor::WndProc(Message iMessage, uptr_t wParam, sptr_t lParam) {
 	case Message::FindTextFull:
 		return FindTextFull(wParam, lParam);
 
-	case Message::GetTextRange: {
-			if (lParam == 0)
-				return 0;
-			TextRange *tr = static_cast<TextRange *>(PtrFromSPtr(lParam));
-			Sci::Position cpMax = static_cast<Sci::Position>(tr->chrg.cpMax);
-			if (cpMax == -1)
-				cpMax = pdoc->Length();
-			PLATFORM_ASSERT(cpMax <= pdoc->Length());
-			Sci::Position len = cpMax - tr->chrg.cpMin; 	// No -1 as cpMin and cpMax are referring to inter character positions
-			pdoc->GetCharRange(tr->lpstrText, tr->chrg.cpMin, len);
-			// Spec says copied text is terminated with a NUL
-			tr->lpstrText[len] = '\0';
-			return len; 	// Not including NUL
+	case Message::GetTextRange:
+		if (TextRange *tr = static_cast<TextRange *>(PtrFromSPtr(lParam))) {
+			return GetTextRange(tr->lpstrText, tr->chrg.cpMin, tr->chrg.cpMax);
 		}
+		return 0;
 
-	case Message::GetTextRangeFull: {
-			if (lParam == 0)
-				return 0;
-			TextRangeFull *tr = static_cast<TextRangeFull *>(PtrFromSPtr(lParam));
-			Sci::Position cpMax = tr->chrg.cpMax;
-			if (cpMax == -1)
-				cpMax = pdoc->Length();
-			PLATFORM_ASSERT(cpMax <= pdoc->Length());
-			const Sci::Position len = cpMax - tr->chrg.cpMin; 	// No -1 as cpMin and cpMax are referring to inter character positions
-			PLATFORM_ASSERT(len >= 0);
-			pdoc->GetCharRange(tr->lpstrText, tr->chrg.cpMin, len);
-			// Spec says copied text is terminated with a NUL
-			tr->lpstrText[len] = '\0';
-			return len; 	// Not including NUL
+	case Message::GetTextRangeFull:
+		if (TextRangeFull *tr = static_cast<TextRangeFull *>(PtrFromSPtr(lParam))) {
+			return GetTextRange(tr->lpstrText, tr->chrg.cpMin, tr->chrg.cpMax);
 		}
+		return 0;
 
 	case Message::HideSelection:
 		vs.selection.visible = wParam == 0;
@@ -6573,19 +6590,17 @@ sptr_t Editor::WndProc(Message iMessage, uptr_t wParam, sptr_t lParam) {
 		pdoc->SetSavePoint();
 		break;
 
-	case Message::GetStyledText: {
-			if (lParam == 0)
-				return 0;
-			TextRange *tr = static_cast<TextRange *>(PtrFromSPtr(lParam));
-			Sci::Position iPlace = 0;
-			for (Sci::Position iChar = tr->chrg.cpMin; iChar < tr->chrg.cpMax; iChar++) {
-				tr->lpstrText[iPlace++] = pdoc->CharAt(iChar);
-				tr->lpstrText[iPlace++] = pdoc->StyleAt(iChar);
-			}
-			tr->lpstrText[iPlace] = '\0';
-			tr->lpstrText[iPlace + 1] = '\0';
-			return iPlace;
+	case Message::GetStyledText:
+		if (TextRange *tr = static_cast<TextRange *>(PtrFromSPtr(lParam))) {
+			return GetStyledText(tr->lpstrText, tr->chrg.cpMin, tr->chrg.cpMax);
 		}
+		return 0;
+
+	case Message::GetStyledTextFull:
+		if (TextRangeFull *tr = static_cast<TextRangeFull *>(PtrFromSPtr(lParam))) {
+			return GetStyledText(tr->lpstrText, tr->chrg.cpMin, tr->chrg.cpMax);
+		}
+		return 0;
 
 	case Message::CanRedo:
 		return (pdoc->CanRedo() && !pdoc->IsReadOnly()) ? 1 : 0;
@@ -7328,6 +7343,7 @@ sptr_t Editor::WndProc(Message iMessage, uptr_t wParam, sptr_t lParam) {
 	case Message::StyleSetChangeable:
 	case Message::StyleSetHotSpot:
 	case Message::StyleSetCheckMonospaced:
+	case Message::StyleSetInvisibleRepresentation:
 		StyleSetMessage(iMessage, wParam, lParam);
 		break;
 
@@ -7347,6 +7363,7 @@ sptr_t Editor::WndProc(Message iMessage, uptr_t wParam, sptr_t lParam) {
 	case Message::StyleGetChangeable:
 	case Message::StyleGetHotSpot:
 	case Message::StyleGetCheckMonospaced:
+	case Message::StyleGetInvisibleRepresentation:
 		return StyleGetMessage(iMessage, wParam, lParam);
 
 	case Message::StyleResetDefault:

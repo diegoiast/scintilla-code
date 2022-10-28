@@ -435,6 +435,21 @@ void LayoutSegments(IPositionCache *pCache,
 						std::string_view(&ll->chars[ts.start], ts.length), &ll->positions[ts.start + 1], multiThreaded);
 				}
 			}
+		} else if (vstyle.styles[ll->styles[ts.start]].invisibleRepresentation[0]) {
+			const int styleInvisible = ll->styles[ts.start];
+			const std::string_view text = vstyle.styles[styleInvisible].invisibleRepresentation;
+			XYPOSITION positionsRepr[Representation::maxLength + 1];
+			// invisibleRepresentation is UTF-8 which only matches cache if document is UTF-8
+			// or it only contains ASCII which is a subset of all currently supported encodings.
+			if (textUnicode || ViewIsASCII(text)) {
+				pCache->MeasureWidths(surface, vstyle, styleInvisible, text, positionsRepr, multiThreaded);
+			} else {
+				surface->MeasureWidthsUTF8(vstyle.styles[styleInvisible].font.get(), text, positionsRepr);
+			}
+			const XYPOSITION representationWidth = positionsRepr[text.length() - 1];
+			for (int ii = 0; ii < ts.length; ii++) {
+				ll->positions[ts.start + 1 + ii] = representationWidth;
+			}
 		}
 	}
 }
@@ -1556,21 +1571,34 @@ void EditView::DrawEOLAnnotationText(Surface *surface, const EditModel &model, c
 
 	// Draw any box or stadium shape
 	if (FlagSet(phase, DrawPhase::indicatorsBack)) {
-		if (vsDraw.eolAnnotationVisible >= EOLAnnotationVisible::Boxed) {
-			PRectangle rcBox = rcSegment;
-			rcBox.left = std::round(rcSegment.left);
-			rcBox.right = std::round(rcSegment.right);
-			if (vsDraw.eolAnnotationVisible == EOLAnnotationVisible::Boxed) {
-				surface->RectangleFrame(rcBox, Stroke(textFore));
-			} else {
-				if (phasesDraw == PhasesDraw::One) {
-					// Draw an outline around the text
-					surface->Stadium(rcBox, FillStroke(ColourRGBA(textBack, 0), textFore, 1.0), ends);
-				} else {
-					// Draw with a fill to fill the edges of the shape.
-					surface->Stadium(rcBox, FillStroke(textBack, textFore, 1.0), ends);
-				}
+		const PRectangle rcBox = PixelAlign(rcSegment, 1);
+
+		switch (vsDraw.eolAnnotationVisible) {
+		case EOLAnnotationVisible::Standard:
+			if (phasesDraw != PhasesDraw::One) {
+				surface->FillRectangle(rcBox, textBack);
 			}
+			break;
+
+		case EOLAnnotationVisible::Boxed:
+			if (phasesDraw == PhasesDraw::One) {
+				// Draw a rectangular outline around the text
+				surface->RectangleFrame(rcBox, textFore);
+			} else {
+				// Draw with a fill to fill the edges of the rectangle.
+				surface->RectangleDraw(rcBox, FillStroke(textBack, textFore));
+			}
+			break;
+
+		default:
+			if (phasesDraw == PhasesDraw::One) {
+				// Draw an outline around the text
+				surface->Stadium(rcBox, FillStroke(ColourRGBA(textBack, 0), textFore), ends);
+			} else {
+				// Draw with a fill to fill the edges of the shape.
+				surface->Stadium(rcBox, FillStroke(textBack, textFore), ends);
+			}
+			break;
 		}
 	}
 
@@ -2230,6 +2258,15 @@ void EditView::DrawForeground(Surface *surface, const EditModel &model, const Vi
 						surface->DrawTextNoClip(rcSegment, textFont,
 							rcSegment.top + vsDraw.maxAscent, text, textFore, textBack);
 					}
+				} else if (vsDraw.styles[styleMain].invisibleRepresentation[0]) {
+					const std::string_view text = vsDraw.styles[styleMain].invisibleRepresentation;
+  					if (phasesDraw != PhasesDraw::One) {
+						surface->DrawTextTransparentUTF8(rcSegment, textFont,
+							rcSegment.top + vsDraw.maxAscent, text, textFore);
+					} else {
+						surface->DrawTextNoClipUTF8(rcSegment, textFont,
+							rcSegment.top + vsDraw.maxAscent, text, textFore, textBack);
+					}
 				}
 				if (vsDraw.viewWhitespace != WhiteSpace::Invisible ||
 					(inIndentation && vsDraw.viewIndentationGuides != IndentView::None)) {
@@ -2783,6 +2820,14 @@ Sci::Position EditView::FormatRange(bool draw, CharacterRangeFull chrg, Rectangl
 		vsPrint.ms[lineNumberIndex].width = lineNumberWidth;
 		vsPrint.Refresh(*surfaceMeasure, model.pdoc->tabInChars);	// Recalculate fixedColumnWidth
 	}
+
+	// Turn off change history marker backgrounds
+	constexpr unsigned int changeMarkers =
+		1u << static_cast<unsigned int>(MarkerOutline::HistoryRevertedToOrigin) |
+		1u << static_cast<unsigned int>(MarkerOutline::HistorySaved) |
+		1u << static_cast<unsigned int>(MarkerOutline::HistoryModified) |
+		1u << static_cast<unsigned int>(MarkerOutline::HistoryRevertedToModified);
+	vsPrint.maskInLine &= ~changeMarkers;
 
 	const Sci::Line linePrintStart = model.pdoc->SciLineFromPosition(chrg.cpMin);
 	Sci::Line linePrintLast = linePrintStart + (rc.bottom - rc.top) / vsPrint.lineHeight - 1;
