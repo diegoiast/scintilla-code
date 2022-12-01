@@ -1,4 +1,4 @@
-# ScintillaCode - cmake fork
+# ScintillaCode - cmake soft/semi fork
 
 ![image](https://a.fsdn.com/con/app/proj/scintilla/screenshots/20757.jpg/max/max/1)
 
@@ -11,8 +11,10 @@ This is a semi fork of ScintillaCode, and a git/github mirror. The main goal
 of this fork is to enable CMake support - and make it  available over
 git (upstream uses mercurial).
 
-This mirror's working branch stricly follows upstream's master without
+This mirror's working branch strictly follows upstream's master without
 modifications - only adding a new build system, mainly aiming twards Qt5/Qt6.
+
+See official documentation here: https://github.com/elcuco/scintilla-code/blob/cmake-support/README
 
 # Usage
 
@@ -69,6 +71,10 @@ Qt6 is actively tested.
 Qt5 should work, but not really tested. Seems like it "should work",
 comment if you find any problem.
 
+Code actively tested on Linux - but Notepadnext CI can build CL
+on OSX and Windows/CL without any problems. CMake makes it transparent,
+but if it fails - do report.
+
 
 # PRs, changes etc
 
@@ -81,3 +87,4 @@ Things I would like to fix, add:
 1. win32 support. Should be trivial.
 2. GTK support. Unsure how much this is needed, as GTK community is using Meson these days.
 3. Cocoa... again, interesting, but I don't own a mac. Donations are welcomed :)
+4. Qt6/Qt5 dynamic/static linking might do someproblems. Be warned.
