@@ -1,16 +1,4 @@
-README for building of Scintilla, Lexilla, and SciTE - git mirror
-
-This is a git mirror of upstream http://hg.code.sf.net/p/scintilla/code
-
-This mirror not only is hosted in git, but also has a CMake support
-for Qt. GTK and Win32 can be added on request, PRs are welcomed.
-
-To use the `ScintillaEdit` widget in your Qt6 app add this to your
-CMake (see https://github.com/cpm-cmake/CPM.cmake)
-
-	CPMAddPackage("gh:elcuco/scintilla-code#c2ce7fd307466c4fc79355d06c445fd7fc60d339")
-
-TODO: Lexers should be documented here.
+README for building of Scintilla, Lexilla, and SciTE
 
 Scintilla and Lexilla can be built by themselves.
 To build SciTE, Scintilla and Lexilla should first be built.
