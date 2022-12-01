@@ -46,6 +46,10 @@ public:
 		return (start != Sci::invalidPosition) && (end != Sci::invalidPosition);
 	}
 
+	[[nodiscard]] bool Empty() const noexcept {
+		return start == end;
+	}
+
 	Sci::Position First() const noexcept {
 		return (start <= end) ? start : end;
 	}
@@ -195,7 +199,7 @@ public:
 	LexInterface &operator=(const LexInterface &) = delete;
 	LexInterface &operator=(LexInterface &&) = delete;
 	virtual ~LexInterface() noexcept;
-	void SetInstance(ILexer5 *instance_);
+	void SetInstance(ILexer5 *instance_) noexcept;
 	void Colourise(Sci::Position start, Sci::Position end);
 	virtual Scintilla::LineEndType LineEndTypesSupported();
 	bool UseContainerLexing() const noexcept;
@@ -369,6 +373,7 @@ public:
 	// Gateways to modifying document
 	void ModifiedAt(Sci::Position pos) noexcept;
 	void CheckReadOnly();
+	void TrimReplacement(std::string_view &text, Range &range) const noexcept;
 	bool DeleteChars(Sci::Position pos, Sci::Position len);
 	Sci::Position InsertString(Sci::Position position, const char *s, Sci::Position insertLength);
 	Sci::Position InsertString(Sci::Position position, std::string_view sv);
@@ -408,7 +413,7 @@ public:
 	int SCI_METHOD GetLineIndentation(Sci_Position line) override;
 	Sci::Position SetLineIndentation(Sci::Line line, Sci::Position indent);
 	Sci::Position GetLineIndentPosition(Sci::Line line) const;
-	Sci::Position GetColumn(Sci::Position pos);
+	Sci::Position GetColumn(Sci::Position pos) const;
 	Sci::Position CountCharacters(Sci::Position startPos, Sci::Position endPos) const noexcept;
 	Sci::Position CountUTF16(Sci::Position startPos, Sci::Position endPos) const noexcept;
 	Sci::Position FindColumn(Sci::Line line, Sci::Position column);

@@ -56,7 +56,7 @@ LexInterface::LexInterface(Document *pdoc_) noexcept : pdoc(pdoc_), performingSt
 
 LexInterface::~LexInterface() noexcept = default;
 
-void LexInterface::SetInstance(ILexer5 *instance_) {
+void LexInterface::SetInstance(ILexer5 *instance_) noexcept {
 	instance.reset(instance_);
 }
 
@@ -1242,6 +1242,17 @@ void Document::CheckReadOnly() {
 	}
 }
 
+void Document::TrimReplacement(std::string_view &text, Range &range) const noexcept {
+	while (!text.empty() && !range.Empty() && (text.front() == CharAt(range.start))) {
+		text.remove_prefix(1);
+		range.start++;
+	}
+	while (!text.empty() && !range.Empty() && (text.back() == CharAt(range.end-1))) {
+		text.remove_suffix(1);
+		range.end--;
+	}
+}
+
 // Document only modified by gateways DeleteChars, InsertString, Undo, Redo, and SetStyleAt.
 // SetStyleAt does not change the persistent state of a document
 
@@ -1588,7 +1599,7 @@ Sci::Position Document::GetLineIndentPosition(Sci::Line line) const {
 	return pos;
 }
 
-Sci::Position Document::GetColumn(Sci::Position pos) {
+Sci::Position Document::GetColumn(Sci::Position pos) const {
 	Sci::Position column = 0;
 	const Sci::Line line = SciLineFromPosition(pos);
 	if ((line >= 0) && (line < LinesTotal())) {
@@ -1761,7 +1772,10 @@ bool Document::IsWhiteLine(Sci::Line line) const {
 
 Sci::Position Document::ParaUp(Sci::Position pos) const {
 	Sci::Line line = SciLineFromPosition(pos);
-	line--;
+	const Sci::Position start = LineStart(line);
+	if (pos == start) {
+		line--;
+	}
 	while (line >= 0 && IsWhiteLine(line)) { // skip empty lines
 		line--;
 	}

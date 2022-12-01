@@ -574,6 +574,7 @@
       </tr><tr>
 	<td>Reinhard Nißl</td>
 	<td>Ferdinand Oeinck</td>
+	<td>Michael Heath</td>
     </tr>
     </table>
     <h2>Releases</h2>
@@ -583,6 +584,10 @@
     <ul>
 	<li>
 	Released 12 October 2022.
+	</li>
+	<li>
+	Add SCI_REPLACETARGETMINIMAL to change text without causing unchanged prefix and suffix
+	to be marked as modified in change history.
 	</li>
 	<li>
 	Draw background colour for EOL annotations with standard and boxed visuals.
@@ -598,12 +603,30 @@
 	<a href="https://sourceforge.net/p/scintilla/feature-requests/1459/">Feature #1459</a>.
 	</li>
 	<li>
+	Change 'paragraph up' commands SCI_PARAUP and SCI_PARAUPEXTEND to
+	go to the start position of the paragraph containing the caret.
+	Only if the caret is already at the start of the paragraph will it go to the start
+	of the previous paragraph.
+	<a href="https://sourceforge.net/p/scintilla/bugs/2363/">Bug #2363</a>.
+	</li>
+	<li>
+	Change release compilation optimization option to favour speed over space.
+	-O2 for MSVC and -O3 for gcc and clang.
+	</li>
+	<li>
+	On Win32, avoid blurry display with DirectWrite in GDI scaling mode.
+	<a href="https://sourceforge.net/p/scintilla/bugs/2344/">Bug #2344</a>.
+	</li>
+	<li>
 	On Win32, use the top-level window to find the monitor for DirectWrite rendering parameters.
 	Temporarily switch DPI awareness to find correct monitor in GDI scaling mode.
 	<a href="https://sourceforge.net/p/scintilla/bugs/2344/">Bug #2344</a>.
 	</li>
 	<li>
 	On Qt, implement SCI_SETRECTANGULARSELECTIONMODIFIER for all platforms.
+	</li>
+	<li>
+	On Qt, allow string form XPM images for SCI_REGISTERIMAGE.
 	</li>
     </ul>
     <h3>
