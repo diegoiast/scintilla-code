@@ -49,6 +49,9 @@ Tags from upstream will also have a similar tag, with `cmake` prefix, which
 should only differ on the build system files.
 
 Available tags:
+** 5.3.2
+    * https://github.com/elcuco/scintilla-code/releases/tag/rel-5-3-2
+    * https://github.com/elcuco/scintilla-code/releases/tag/rel-5-3-2-cmake
 * 5.3.1
     * https://github.com/elcuco/scintilla-code/releases/tag/rel-5-3-1
     * https://github.com/elcuco/scintilla-code/releases/tag/rel-5-3-1-cmake
