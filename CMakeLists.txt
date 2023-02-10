@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
 
 project(scintilla
-    VERSION 5.2.0
+    VERSION 5.3.3
     DESCRIPTION "A free source code editing component"
     LANGUAGES CXX
 )
