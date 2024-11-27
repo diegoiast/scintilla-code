@@ -7,6 +7,7 @@
 
 #include <cstddef>
 #include <cstdlib>
+#include <cstdint>
 #include <cassert>
 #include <cstring>
 #include <cstdio>
@@ -1168,6 +1169,29 @@ bool Document::IsDBCSTrailByteNoExcept(char ch) const noexcept {
 			((trail >= 0x81) && (trail <= 0xFE));
 	}
 	return false;
+}
+
+unsigned char Document::DBCSMinTrailByte() const noexcept {
+	switch (dbcsCodePage) {
+	case 932:
+		// Shift_jis
+		return 0x40;
+	case 936:
+		// GBK
+		return 0x40;
+	case 949:
+		// Korean Wansung KS C-5601-1987
+		return 0x41;
+	case 950:
+		// Big5
+		return 0x40;
+	case 1361:
+		// Korean Johab KS C-5601-1992
+		return 0x31;
+	default:
+		// UTF-8 or single byte, should not occur as not DBCS
+		return 0;
+	}
 }
 
 int Document::DBCSDrawBytes(std::string_view text) const noexcept {
@@ -2828,8 +2852,8 @@ static char BraceOpposite(char ch) noexcept {
 
 // TODO: should be able to extend styled region to find matching brace
 Sci::Position Document::BraceMatch(Sci::Position position, Sci::Position /*maxReStyle*/, Sci::Position startPos, bool useStartPos) noexcept {
-	const char chBrace = CharAt(position);
-	const char chSeek = BraceOpposite(chBrace);
+	const unsigned char chBrace = CharAt(position);
+	const unsigned char chSeek = BraceOpposite(chBrace);
 	if (chSeek == '\0')
 		return - 1;
 	const int styBrace = StyleIndexAt(position);
@@ -2838,21 +2862,30 @@ Sci::Position Document::BraceMatch(Sci::Position position, Sci::Position /*maxRe
 		direction = 1;
 	int depth = 1;
 	position = useStartPos ? startPos : NextPosition(position, direction);
+
+	// Avoid complex NextPosition call for bytes that may not cause incorrect match
+	unsigned char maxSafeChar = 0xff;
+	if (dbcsCodePage != 0 && dbcsCodePage != CpUtf8) {
+		maxSafeChar = (direction >= 0) ? 0x80 : DBCSMinTrailByte() - 1;
+	}
+
 	while ((position >= 0) && (position < LengthNoExcept())) {
-		const char chAtPos = CharAt(position);
-		const int styAtPos = StyleIndexAt(position);
-		if ((position > GetEndStyled()) || (styAtPos == styBrace)) {
-			if (chAtPos == chBrace)
-				depth++;
-			if (chAtPos == chSeek)
-				depth--;
-			if (depth == 0)
-				return position;
+		const unsigned char chAtPos = CharAt(position);
+		if (chAtPos == chBrace || chAtPos == chSeek) {
+			if ((position > GetEndStyled()) || (StyleIndexAt(position) == styBrace)) {
+				depth += (chAtPos == chBrace) ? 1 : -1;
+				if (depth == 0)
+					return position;
+			}
 		}
-		const Sci::Position positionBeforeMove = position;
-		position = NextPosition(position, direction);
-		if (position == positionBeforeMove)
-			break;
+		if (chAtPos <= maxSafeChar) {
+			position += direction;
+		} else {
+			const Sci::Position positionBeforeMove = position;
+			position = NextPosition(position, direction);
+			if (position == positionBeforeMove)
+				break;
+		}
 	}
 	return - 1;
 }
