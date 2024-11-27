@@ -11,42 +11,88 @@ endif()
 
 set(SCINTILLA_QT_EDIT_SOURCES
     qt/ScintillaEditBase/PlatQt.cpp
-    qt/ScintillaEditBase/ScintillaQt.cpp
+    qt/ScintillaEditBase/PlatQt.h
     qt/ScintillaEditBase/ScintillaEditBase.cpp
-    qt/ScintillaEdit/ScintillaEdit.cpp
+    qt/ScintillaEditBase/ScintillaEditBase.h
+    qt/ScintillaEditBase/ScintillaQt.cpp
+    qt/ScintillaEditBase/ScintillaQt.h
     qt/ScintillaEdit/ScintillaDocument.cpp
+    qt/ScintillaEdit/ScintillaDocument.h
+    qt/ScintillaEdit/ScintillaEdit.cpp
+    qt/ScintillaEdit/ScintillaEdit.h
     src/AutoComplete.cxx
+    src/AutoComplete.h
     src/CallTip.cxx
+    src/CallTip.h
     src/CaseConvert.cxx
+    src/CaseConvert.h
     src/CaseFolder.cxx
+    src/CaseFolder.h
     src/CellBuffer.cxx
+    src/CellBuffer.h
     src/ChangeHistory.cxx
+    src/ChangeHistory.h
     src/CharacterCategoryMap.cxx
+    src/CharacterCategoryMap.h
     src/CharacterType.cxx
+    src/CharacterType.h
     src/CharClassify.cxx
+    src/CharClassify.h
     src/ContractionState.cxx
+    src/ContractionState.h
     src/DBCS.cxx
+    src/DBCS.h
+    src/Debugging.h
     src/Decoration.cxx
+    src/Decoration.h
     src/Document.cxx
+    src/Document.h
     src/EditModel.cxx
+    src/EditModel.h
     src/Editor.cxx
+    src/Editor.h
     src/EditView.cxx
+    src/EditView.h
+    src/ElapsedPeriod.h
     src/Geometry.cxx
+    src/Geometry.h
     src/Indicator.cxx
+    src/Indicator.h
     src/KeyMap.cxx
+    src/KeyMap.h
     src/LineMarker.cxx
+    src/LineMarker.h
     src/MarginView.cxx
+    src/MarginView.h
+    src/Partitioning.h
     src/PerLine.cxx
+    src/PerLine.h
+    src/Platform.h
     src/PositionCache.cxx
+    src/PositionCache.h
+    src/Position.h
     src/RESearch.cxx
+    src/RESearch.h
     src/RunStyles.cxx
+    src/RunStyles.h
     src/ScintillaBase.cxx
+    src/ScintillaBase.h
     src/Selection.cxx
+    src/Selection.h
+    src/SparseVector.h
+    src/SplitVector.h
     src/Style.cxx
+    src/Style.h
+    src/UndoHistory.cxx
+    src/UndoHistory.h
     src/UniConversion.cxx
+    src/UniConversion.h
     src/UniqueString.cxx
+    src/UniqueString.h
     src/ViewStyle.cxx
+    src/ViewStyle.h
     src/XPM.cxx
+    src/XPM.h
 )
 
 add_library(scintilla-qt-edit ${SCINTILLA_QT_EDIT_SOURCES} )
