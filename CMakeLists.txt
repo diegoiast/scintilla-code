@@ -9,16 +9,27 @@ project(scintilla
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# TODO add booleans to enable build of GTK, Win32, cocoa and QT versions
+option(BUILD_QT "Build the Qt Scintilla platform (ScintillaEdit)" ON)
+option(BUILD_GTK "Build the GTK3 Scintilla platform" OFF)
+option(BUILD_WIN32 "Build the Win32 Scintilla platform" OFF)
 
+# Platform-agnostic Editor/Document engine, shared by every platform below.
+include(scintilla-core.cmake)
 
-# FIXME: GTK does not build yet, working on that
-#include(scintilla-gtk.cmake)
+if(BUILD_GTK)
+    include(scintilla-gtk.cmake)
+endif()
 
-# TODO: Create a win32 version
-#include(scintilla-win32.cmake)
+if(BUILD_WIN32)
+    if(NOT WIN32)
+        message(FATAL_ERROR "BUILD_WIN32 requires a Windows toolchain")
+    endif()
+    include(scintilla-win32.cmake)
+endif()
 
 # TODO: Create a cocoa version
 #include(scintilla-cocoa.cmake)
 
-include(scintilla-qt.cmake)
+if(BUILD_QT)
+    include(scintilla-qt.cmake)
+endif()
